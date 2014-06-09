@@ -1,0 +1,10 @@
+blackjack_game
+=========
+blackjack.rb
+
+This is a computer game that plays blackjack with the house against the player.
+You have $100 bank and have to bet minimum $10.  You bet until you are out of
+money.  The objective is to get 21 or as close to it without going over.
+
+I did not get the ace to have multiple values (1, 11) and I also didn't get the
+money and bets to work.
