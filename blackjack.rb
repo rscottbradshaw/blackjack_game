@@ -1,4 +1,6 @@
 class Card
+  # attr_accessor :rank, :suit (this does same thing as code on lines 9-15)
+
   def initialize(rank, suit)
     @rank = rank
     @suit = suit
@@ -113,10 +115,19 @@ class Player
 
   def total_value
     total = 0
+    num_of_aces = 0
+    for card in @hand
+      if card.rank == :A
+        num_of_aces = num_of_aces + 1
+      end # if
+    end #for card in hand
     for card in @hand
       total = total + card.value
       #  or total += card.value
     end # for each card
+    if total <= 11 && num_of_aces > 0
+      total = total + 10
+    end # if
     total
   end # total_value
 
@@ -144,20 +155,53 @@ end # player
 # player.add_card(card_two)
 # puts player.total_value
 
+# class Money
+#   def initialize
+#     @wallet = 100
+#     @bets = 0
+#   end # initialize
+#
+#   def wallet
+#     @wallet
+#   end # wallet
+#
+#   def bets
+#     @bets
+#   end # bets
+#
+#   def lose_bet
+#     @wallet -= @bet
+#   end
+#
+#   def win_bet
+#     @wallet += @bet
+#   end
+#
+#   def push
+#     @wallet == @bet
+#   end
+# end # money
+
 class Game
   def initialize
     @p1 = Player.new
     @house = Player.new
-    #@bet = bet.new
     @deck = Deck.new
     run
   end # initialize
 
   def run
     puts "Welcome to Blackjack!! Good Luck players!!"
+    # ante
     initial_deal
     house_blackjack
   end # run
+
+  # def ante
+  #   puts "Please place your bets.  Minimum of $10"
+  #   bet_amount = gets.chomp
+  #
+  # end
 
   def initial_deal
     @p1.add_card(@deck.draw)
@@ -165,15 +209,6 @@ class Game
     @p1.add_card(@deck.draw)
     @house.add_card(@deck.draw)
   end # initial_deal
-
-  # def ace_value
-  #   if total_value < 11
-  #     :A == 11
-  #     black_jack?
-  #   else
-  #     :A == 1
-  #   end
-  # end # ace_value
 
   def house_blackjack
     if @house.black_jack? # total_value == @house.black_jack
@@ -188,6 +223,7 @@ class Game
     print "The House has "
     @house.print_hand
     print "for a total of #{@house.total_value}! "
+    # @p1.lose_bet
     if @house.total_value > 16 && @house.total_value < 22
       puts "House will stay with #{@house.total_value}!"
       game_over
@@ -196,6 +232,7 @@ class Game
       house_hit
     elsif @house.total_value > 21
       puts "House has busted, YOU WIN!!"
+      # @p1.win_bet
       game_over
     elsif @house.total_value == 21
       puts "House has 21 and will stay!!"
@@ -209,6 +246,7 @@ class Game
     print "You have "
     @p1.print_hand
     print "for a total of #{@p1.total_value}! "
+    # @p1.win_bet
     if @p1.black_jack?
       puts "Congratulations Blackjack Winner!!"
       house_play
@@ -225,6 +263,7 @@ class Game
       end # if input
     elsif @p1.total_value > 21
       puts "You have BUSTED player!!"
+      # @p1.lose_bet
       game_over
     elsif @p1.total_value == 21
       puts "You have 21 and will stay!!"
@@ -245,20 +284,25 @@ class Game
 
   def game_over
     if @house.total_value > 21
+      # @p1.win_bet
       puts "Thank you for playing!!"
       exit
     elsif @p1.total_value > 21
+      # @p1.lose_bet
       puts "Thank you for playing!!"
       exit
     elsif @house.total_value == @p1.total_value
+      push
       puts "We have a push!!  Nobody wins or loses."
       puts "Thank you for playing!!"
       exit
     elsif @house.total_value > @p1.total_value
+      # @p1.lose bet
       puts "You lose!! Dealer has #{@house.total_value}!"
       puts "Thank you for playing!!"
       exit
     else @house.total_value < @p1.total_value
+      # @p1.win_bet
       puts "You WIN!!!  You have #{@p1.total_value}"
       puts "Thank you for playing!!"
       exit
