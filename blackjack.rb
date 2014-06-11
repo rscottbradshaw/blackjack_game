@@ -92,13 +92,12 @@ end # class
 # puts d.deck
 
 class Player
+  attr_accessor :hand, :bet
+
   def initialize
     @hand = []
+    @bet = Money.new
   end # initialize
-
-  def hand
-    @hand
-  end # hand
 
   def add_card(card)
     @hand.push(card)
@@ -155,32 +154,26 @@ end # player
 # player.add_card(card_two)
 # puts player.total_value
 
-# class Money
-#   def initialize
-#     @wallet = 100
-#     @bets = 0
-#   end # initialize
-#
-#   def wallet
-#     @wallet
-#   end # wallet
-#
-#   def bets
-#     @bets
-#   end # bets
-#
-#   def lose_bet
-#     @wallet -= @bet
-#   end
-#
-#   def win_bet
-#     @wallet += @bet
-#   end
-#
-#   def push
-#     @wallet == @bet
-#   end
-# end # money
+class Money
+  attr_accessor :wallet, :bets
+
+  def initialize
+    @wallet = 100
+    @bets = 0
+  end # initialize
+
+  def bet_amt
+    @bets = gets.chomp.to_i
+  end # bets
+
+  def lose_bet
+    @wallet -= @bets
+  end
+
+  def win_bet
+    @wallet += @bets
+  end
+end # money
 
 class Game
   def initialize
@@ -192,18 +185,19 @@ class Game
 
   def run
     puts "Welcome to Blackjack!! Good Luck players!!"
-    # ante
+    if @p1.bet.wallet > 9
+      puts "Please bet minimum of $10. You have $#{@p1.bet.wallet}"
+    else
+      game_over
+    end
+    @p1.bet.bet_amt
     initial_deal
     house_blackjack
   end # run
 
-  # def ante
-  #   puts "Please place your bets.  Minimum of $10"
-  #   bet_amount = gets.chomp
-  #
-  # end
-
   def initial_deal
+    @p1.hand = []
+    @house.hand =[]
     @p1.add_card(@deck.draw)
     @house.add_card(@deck.draw)
     @p1.add_card(@deck.draw)
@@ -223,7 +217,6 @@ class Game
     print "The House has "
     @house.print_hand
     print "for a total of #{@house.total_value}! "
-    # @p1.lose_bet
     if @house.total_value > 16 && @house.total_value < 22
       puts "House will stay with #{@house.total_value}!"
       game_over
@@ -231,8 +224,6 @@ class Game
       puts "House will take a card"
       house_hit
     elsif @house.total_value > 21
-      puts "House has busted, YOU WIN!!"
-      # @p1.win_bet
       game_over
     elsif @house.total_value == 21
       puts "House has 21 and will stay!!"
@@ -246,14 +237,15 @@ class Game
     print "You have "
     @p1.print_hand
     print "for a total of #{@p1.total_value}! "
-    # @p1.win_bet
+    puts "Dealer has #{@house.total_value}."
     if @p1.black_jack?
       puts "Congratulations Blackjack Winner!!"
+      @p1.bet.win_bet
       house_play
     elsif @p1.total_value < 21
-      puts "Would you like to Hit or Stay?"
+      puts "Would you like to (H)it or (S)tay?"
       input = gets.chomp.downcase
-      if input == "hit"
+      if input == "h"
         puts "You will take a new card."
         p1_hit
         human_play
@@ -262,8 +254,6 @@ class Game
         house_play
       end # if input
     elsif @p1.total_value > 21
-      puts "You have BUSTED player!!"
-      # @p1.lose_bet
       game_over
     elsif @p1.total_value == 21
       puts "You have 21 and will stay!!"
@@ -284,30 +274,35 @@ class Game
 
   def game_over
     if @house.total_value > 21
-      # @p1.win_bet
-      puts "Thank you for playing!!"
-      exit
+      puts "House has busted, YOU WIN!!"
+      @p1.bet.win_bet
     elsif @p1.total_value > 21
-      # @p1.lose_bet
-      puts "Thank you for playing!!"
-      exit
+      puts "You have BUSTED player!!  House wins with #{@house.total_value}!"
+      @p1.bet.lose_bet
     elsif @house.total_value == @p1.total_value
-      push
       puts "We have a push!!  Nobody wins or loses."
-      puts "Thank you for playing!!"
-      exit
     elsif @house.total_value > @p1.total_value
-      # @p1.lose bet
+      @p1.bet.lose_bet
       puts "You lose!! Dealer has #{@house.total_value}!"
-      puts "Thank you for playing!!"
-      exit
     else @house.total_value < @p1.total_value
-      # @p1.win_bet
+      @p1.bet.win_bet
       puts "You WIN!!!  You have #{@p1.total_value}"
+    end # if
+    if @p1.bet.wallet < 10
+      puts "Sorry you are out of money."
       puts "Thank you for playing!!"
       exit
-    end # if
-    exit
+    else
+      puts "Would you like to play again?  (Y)es or (N)o?"
+      keep_playing = gets.chomp.downcase
+      if keep_playing == "y"
+        puts "Great!!  Let's keep playing"
+        run
+      else
+        puts "Thank you for playing!!"
+        exit
+      end
+    end #if
   end # game_over
 end # game
 
